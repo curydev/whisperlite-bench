@@ -41,6 +41,12 @@ def available_memory() -> int:
     return avail
 
 
+def hostname() -> str:
+    """Name of the physical PC. Inside Docker the hostname is a random
+    container id, so the host passes its own name in WHISPERLITE_HOST."""
+    return os.environ.get("WHISPERLITE_HOST") or platform.node()
+
+
 def default_threads() -> int:
     return psutil.cpu_count(logical=False) or os.cpu_count() or 1
 
@@ -48,7 +54,7 @@ def default_threads() -> int:
 def collect() -> dict:
     vm = psutil.virtual_memory()
     return {
-        "hostname": platform.node(),
+        "hostname": hostname(),
         "os": f"{platform.system()} {platform.release()}",
         "machine": platform.machine(),
         "cpu": platform.processor() or platform.machine(),

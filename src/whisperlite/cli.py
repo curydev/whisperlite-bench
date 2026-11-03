@@ -3,7 +3,7 @@
 import argparse
 import csv
 import json
-import platform
+import os
 import sys
 from pathlib import Path
 
@@ -14,7 +14,7 @@ from .recommend import fits_in_memory, recommend
 
 
 def _host() -> str:
-    return platform.node().split(".")[0] or "host"
+    return sysinfo.hostname().split(".")[0] or "host"
 
 
 def cmd_sysinfo(args):
@@ -24,8 +24,11 @@ def cmd_sysinfo(args):
 def cmd_prepare_data(args):
     from .data import prepare
 
-    manifest = prepare(args.out, args.limit)
-    print(f"manifest: {manifest}")
+    manifest = prepare(args.out, args.limit, args.stride)
+    print(f"manifest: {manifest}", flush=True)
+    # datasets' streaming threads can abort the interpreter during shutdown
+    # ("PyGILState_Release ... finalizing") after all work is done; skip it.
+    os._exit(0)
 
 
 def _measure_all(configs, manifest, threads, out, timeout):
@@ -117,7 +120,8 @@ def build_parser():
 
     s = sub.add_parser("prepare-data", help="Zeroth-Korean 테스트셋을 WAV와 manifest로 준비")
     s.add_argument("--out", default="data/zeroth_test")
-    s.add_argument("--limit", type=int, help="앞에서부터 N개만 (내장 샘플용)")
+    s.add_argument("--limit", type=int, help="N개만 받기 (내장 샘플용)")
+    s.add_argument("--stride", type=int, default=1, help="k개마다 하나씩 (화자가 고르게 섞이도록)")
     s.set_defaults(func=cmd_prepare_data)
 
     def common(s, manifest_flag, manifest_default, runners_default):

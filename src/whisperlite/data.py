@@ -30,8 +30,12 @@ def to_wav(src, dst) -> None:
     )
 
 
-def prepare(out_dir, limit=None) -> Path:
-    """Stream the test split (no full-dataset download) and write WAVs + manifest."""
+def prepare(out_dir, limit=None, stride=1) -> Path:
+    """Stream the test split (no full-dataset download) and write WAVs + manifest.
+
+    The split is ordered by speaker, so a small sample should use stride > 1
+    (every stride-th utterance) to cover more speakers.
+    """
     from datasets import Audio, load_dataset
 
     out = Path(out_dir)
@@ -42,7 +46,9 @@ def prepare(out_dir, limit=None) -> Path:
     rows = []
     with tempfile.TemporaryDirectory() as tmp:
         for i, ex in enumerate(ds):
-            if limit is not None and i >= limit:
+            if i % stride:
+                continue
+            if limit is not None and len(rows) >= limit:
                 break
             uid = str(ex.get("id") or f"{i:05d}")
             src = Path(tmp) / f"{uid}.flac"

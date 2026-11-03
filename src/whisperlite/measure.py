@@ -22,8 +22,21 @@ FIELDS = [
 ]
 
 
+def process_memory(p) -> int:
+    """Memory of one process without double counting shared pages.
+
+    A child that has just been forked (openai/whisper starts ffmpeg for every
+    file) shares all of its parent's pages until exec, so summing RSS over the
+    tree can report up to twice the real usage. PSS splits shared pages
+    between the processes that map them; it is available on Linux (Docker).
+    """
+    if sys.platform.startswith("linux"):
+        return p.memory_full_info().pss
+    return p.memory_info().rss
+
+
 class PeakMemory:
-    """Polls the RSS of a process and its children (whisper-cli runs as a child)."""
+    """Polls the memory of a process and its children (whisper-cli runs as a child)."""
 
     def __init__(self, pid: int, interval: float = 0.05):
         self.proc = psutil.Process(pid)
@@ -39,7 +52,7 @@ class PeakMemory:
                 total = 0
                 for p in procs:
                     try:
-                        total += p.memory_info().rss
+                        total += process_memory(p)
                     except psutil.Error:
                         pass
                 self.peak = max(self.peak, total)
@@ -62,7 +75,7 @@ def measure(config, manifest, threads, timeout=None) -> dict:
     row = {
         "runner": config.runner, "model": config.model, "precision": config.precision,
         "threads": threads, "n_files": len(items), "audio_seconds": round(audio_seconds, 2),
-        "docker": sysinfo.in_docker(), "hostname": sysinfo.collect()["hostname"], "error": "",
+        "docker": sysinfo.in_docker(), "hostname": sysinfo.hostname(), "error": "",
     }
     with tempfile.TemporaryDirectory() as tmp:
         job_path, out_path = Path(tmp) / "job.json", Path(tmp) / "result.json"

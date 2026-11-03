@@ -22,7 +22,8 @@ WORKDIR /app
 RUN pip3 install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 COPY pyproject.toml README.md ./
 COPY src ./src
-RUN pip3 install --no-cache-dir -e ".[all,dev]"
+# Ubuntu 22.04's pip is too old for pyproject-only packages; upgrade it first
+RUN pip3 install --no-cache-dir --upgrade pip && pip3 install --no-cache-dir ".[all,dev]"
 COPY tests ./tests
 
 # models are cached here; mount a volume to keep them between runs

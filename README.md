@@ -37,10 +37,16 @@ docker build -f docker/Dockerfile -t whisperlite .
 ```
 
 ```bash
-docker run --rm -v "$PWD/data:/app/data" -v "$PWD/results:/app/results" -v whisperlite-cache:/cache whisperlite sysinfo
+docker run --rm -e WHISPERLITE_HOST="$(hostname -s)" -v "$PWD/data:/app/data" -v "$PWD/results:/app/results" -v whisperlite-cache:/cache whisperlite sysinfo
 ```
 
-macOS·Windows의 Docker Desktop은 VM 안에서 돌아가므로, 설정에서 메모리를 충분히(medium까지 재려면 6GB 이상 권장) 할당하세요.
+아래 사용법의 `whisperlite ...` 명령은 컨테이너에서는 위 명령의 `sysinfo` 자리에 넣어 실행합니다. `WHISPERLITE_HOST`는 결과 파일에 실제 PC 이름을 남기기 위한 값입니다(컨테이너 안의 호스트 이름은 매번 바뀜).
+
+macOS·Windows의 Docker는 VM 안에서 돌아가므로 VM에 메모리를 충분히(medium까지 재려면 6GB 이상 권장) 할당하세요. Docker Desktop 대신 [Colima](https://github.com/abiosoft/colima)도 쓸 수 있습니다.
+
+```bash
+brew install colima docker docker-buildx && colima start --cpu 8 --memory 6
+```
 
 ### B. 직접 실행 (Ubuntu 기본)
 
@@ -71,7 +77,7 @@ whisperlite prepare-data --out data/zeroth_test
 ```
 
 ```bash
-whisperlite prepare-data --out data/sample --limit 20
+whisperlite prepare-data --out data/sample --limit 20 --stride 20
 ```
 
 ```bash
@@ -90,7 +96,7 @@ whisperlite compare results/bench_mypc.csv results/bench_mypc_docker.csv
 whisperlite plot results/reference.csv --out results/rtf_cer.png
 ```
 
-- `prepare-data`: Zeroth-Korean 테스트셋(457개, 약 1.2시간)을 16kHz WAV와 `manifest.csv`로 준비합니다. `--limit`으로 앞에서부터 일부만 받아 내장 샘플로 씁니다.
+- `prepare-data`: Zeroth-Korean 테스트셋(457개, 약 1.2시간)을 16kHz WAV와 `manifest.csv`로 준비합니다. `--limit`으로 일부만 받아 내장 샘플로 씁니다. 테스트셋이 화자 순서로 정렬되어 있으므로 `--stride`로 k개마다 하나씩 골라 여러 화자가 섞이게 하세요.
 - `bench`: 20개 조합 전체 측정. 결과 파일에 이미 있는 조합은 건너뛰므로 중간에 멈춰도 이어서 돌릴 수 있습니다. 개발 중에는 `--runners faster --models tiny`처럼 좁혀서 돌리세요.
 - `recommend`: 이 PC에서 후보를 짧게 재고 추천합니다. `--max-rtf 0.5`는 "음성 길이의 절반 시간 안에 처리"라는 뜻입니다.
 - `compare`: 같은 PC에서 잰 두 결과(예: 직접 실행 vs Docker)의 RTF 비율과 메모리 차이.
