@@ -23,20 +23,23 @@ FIELDS = [
 
 
 def process_memory(p) -> int:
-    """Memory of one process without double counting shared pages.
-
-    A child that has just been forked (openai/whisper starts ffmpeg for every
-    file) shares all of its parent's pages until exec, so summing RSS over the
-    tree can report up to twice the real usage. PSS splits shared pages
-    between the processes that map them; it is available on Linux (Docker).
-    """
+    """Memory of one process; on Linux PSS, which splits shared libraries
+    between the processes that map them."""
     if sys.platform.startswith("linux"):
         return p.memory_full_info().pss
     return p.memory_info().rss
 
 
 class PeakMemory:
-    """Polls the memory of a process and its children (whisper-cli runs as a child)."""
+    """Polls the memory of a process and its children (whisper-cli runs as a child).
+
+    openai/whisper forks ffmpeg for every file. Between fork and exec the child
+    is a copy of the worker sharing all its pages, and because parent and child
+    are read one after the other, a fork in between makes the parent count in
+    full while the child counts half its pages (pilot: 7.7GB reported, 5.1GB
+    real). Children whose command line is still the parent's are therefore
+    skipped; once they exec (ffmpeg, whisper-cli) they are counted.
+    """
 
     def __init__(self, pid: int, interval: float = 0.05):
         self.proc = psutil.Process(pid)
@@ -46,12 +49,17 @@ class PeakMemory:
         self._thread = threading.Thread(target=self._poll, daemon=True)
 
     def _poll(self):
+        try:
+            own_cmdline = self.proc.cmdline()
+        except psutil.Error:
+            return
         while not self._stop.is_set():
             try:
-                procs = [self.proc] + self.proc.children(recursive=True)
-                total = 0
-                for p in procs:
+                total = process_memory(self.proc)
+                for p in self.proc.children(recursive=True):
                     try:
+                        if p.cmdline() == own_cmdline:
+                            continue  # forked copy that has not exec'd yet
                         total += process_memory(p)
                     except psutil.Error:
                         pass
