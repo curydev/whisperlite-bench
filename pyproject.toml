@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whisperlite-bench"
+version = "0.1.0"
+description = "CPU 노트북에서 Whisper 경량화 실행 방식을 비교하고 PC에 맞는 설정을 추천하는 도구"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+dependencies = [
+    "psutil",
+    "jiwer",
+]
+
+[project.optional-dependencies]
+openai = ["openai-whisper"]
+faster = ["faster-whisper"]
+data = ["datasets"]
+plot = ["matplotlib"]
+all = ["openai-whisper", "faster-whisper", "datasets", "matplotlib"]
+dev = ["pytest"]
+
+[project.scripts]
+whisperlite = "whisperlite.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

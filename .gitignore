@@ -1,0 +1,18 @@
+# datasets and models are downloaded, never committed
+data/
+models/
+*.bin
+*.wav
+*.flac
+
+# Python
+__pycache__/
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# results: commit CSVs and figures you want to publish, not scratch runs
+results/scratch/
+
+.DS_Store
