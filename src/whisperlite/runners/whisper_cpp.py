@@ -41,6 +41,26 @@ def ensure_model(model: str, precision: str) -> Path:
     return path
 
 
+def parse_stdout(data: bytes) -> str:
+    """Join whisper-cli's segment lines into one string.
+
+    whisper.cpp splits segments on token boundaries, and a token can end in the
+    middle of a multibyte character (common for Korean). The rest of that
+    character then starts the next line. Such lines are glued back without a
+    space; any bytes that are still invalid become U+FFFD.
+    """
+    out = b""
+    for line in data.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if out and 0x80 <= line[0] <= 0xBF:  # UTF-8 continuation byte
+            out += line
+        else:
+            out += (b" " if out else b"") + line
+    return out.decode("utf-8", errors="replace")
+
+
 def parse_load_ms(stderr: str):
     m = _LOAD.search(stderr)
     return float(m.group(1)) if m else None
@@ -70,11 +90,11 @@ class WhisperCppRunner(Runner):
 
     def transcribe(self, wav_path):
         start = time.perf_counter()
-        proc = subprocess.run(self.command(wav_path), capture_output=True, text=True, check=True)
+        proc = subprocess.run(self.command(wav_path), capture_output=True, check=True)
         wall = time.perf_counter() - start
-        load_ms = parse_load_ms(proc.stderr)
+        load_ms = parse_load_ms(proc.stderr.decode("utf-8", errors="replace"))
         self._seconds = wall - load_ms / 1000 if load_ms is not None else wall
-        return " ".join(line.strip() for line in proc.stdout.splitlines() if line.strip())
+        return parse_stdout(proc.stdout)
 
     def last_transcribe_seconds(self):
         return self._seconds

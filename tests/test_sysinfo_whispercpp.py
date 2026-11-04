@@ -1,4 +1,4 @@
-from whisperlite.runners.whisper_cpp import WhisperCppRunner, model_filename, parse_load_ms
+from whisperlite.runners.whisper_cpp import WhisperCppRunner, model_filename, parse_load_ms, parse_stdout
 from whisperlite.sysinfo import cgroup_memory_limit, collect
 
 
@@ -33,3 +33,13 @@ def test_whisper_cli_command_is_cpu_only():
     r.decoding = {"language": "ko", "beam_size": 5}
     cmd = r.command("a.wav")
     assert "-ng" in cmd and cmd[cmd.index("-l") + 1] == "ko" and cmd[cmd.index("-t") + 1] == "4"
+
+
+def test_stdout_rejoins_split_korean_character():
+    word = "안녕하세요".encode()  # each syllable is 3 bytes
+    data = b" " + word[:4] + b"\n" + word[4:] + b"\n \xeb\xb0\x98\xea\xb0\x91\n"
+    assert parse_stdout(data) == "안녕하세요 반갑"
+
+
+def test_stdout_replaces_leftover_invalid_bytes():
+    assert parse_stdout(b"\xeb\x93 ok\n") == "\ufffd ok"
