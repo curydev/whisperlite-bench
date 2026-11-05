@@ -5,6 +5,7 @@
 | 파일 | 만드는 명령 | 용도 |
 |---|---|---|
 | `bench_<PC>.csv`, `bench_<PC>_docker.csv` | `whisperlite bench` | 전체 측정. 팀이 정한 하나를 `reference.csv`로 복사해 CER 표로 사용 |
+| `bench_<PC>_hyps/`, `bench_<PC>_docker_hyps/` | `whisperlite bench` | 조합별 전사문 JSONL. `whisperlite rescore`로 CER 다시 계산 |
 | `quick_<PC>.csv` | `whisperlite recommend` | 사용자 PC의 짧은 측정 |
 | `rtf_cer.png` | `whisperlite plot` | RTF–CER 산점도 |
 

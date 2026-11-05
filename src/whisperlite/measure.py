@@ -77,7 +77,31 @@ class PeakMemory:
         self._thread.join()
 
 
-def measure(config, manifest, threads, timeout=None) -> dict:
+def hyps_dir(out_csv) -> Path:
+    """Where bench keeps transcripts next to its CSV: results/x.csv → results/x_hyps/."""
+    out_csv = Path(out_csv)
+    return out_csv.with_name(out_csv.stem + "_hyps")
+
+
+def hyps_path(out_csv, config) -> Path:
+    return hyps_dir(out_csv) / (config.key.replace("/", "_") + ".jsonl")
+
+
+def write_hyps(path, items, hyps) -> None:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        for item, hyp in zip(items, hyps):
+            f.write(json.dumps({"id": item["id"], "ref": item["text"], "hyp": hyp}, ensure_ascii=False) + "\n")
+
+
+def read_hyps(path) -> list:
+    with open(path, encoding="utf-8") as f:
+        return [json.loads(line) for line in f if line.strip()]
+
+
+def measure(config, manifest, threads, timeout=None, save_hyps=None) -> dict:
+    """Run one configuration. save_hyps: optional .jsonl path for the transcripts."""
     items = load_manifest(manifest)
     audio_seconds = sum(i["duration"] for i in items)
     row = {
@@ -112,6 +136,8 @@ def measure(config, manifest, threads, timeout=None) -> dict:
 
     by_id = {r["id"]: r for r in result["items"]}
     hyps = [by_id[i["id"]]["hyp"] for i in items]
+    if save_hyps:
+        write_hyps(save_hyps, items, hyps)
     transcribe_seconds = sum(r["seconds"] for r in result["items"])
     row.update({
         "load_seconds": round(result["load_seconds"], 3),

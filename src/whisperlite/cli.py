@@ -9,7 +9,9 @@ from pathlib import Path
 
 from . import sysinfo
 from .configs import MODEL_SIZES, PRECISIONS, all_configs
-from .measure import append_row, measure, read_rows
+from .measure import FIELDS, append_row, hyps_dir, hyps_path, measure, read_hyps, read_rows
+from .metrics import cer
+from .textnorm import has_digits
 from .recommend import fits_in_memory, recommend
 
 
@@ -40,7 +42,7 @@ def _measure_all(configs, manifest, threads, out, timeout):
             print(f"skip {c.key} (already in {out})")
             continue
         print(f"measure {c.key} ...", flush=True)
-        row = measure(c, manifest, threads, timeout)
+        row = measure(c, manifest, threads, timeout, save_hyps=hyps_path(out, c))
         append_row(out, row)
         status = row["error"] or f"RTF {row['rtf']}  CER {row['cer']}  RAM {row['peak_ram_mb']}MB"
         print(f"  {status}", flush=True)
@@ -74,6 +76,32 @@ def cmd_recommend(args):
         return 1
     print(f"\n추천 설정: {best.key}")
     return 0
+
+
+def cmd_rescore(args):
+    """Recompute CER from saved transcripts, e.g. after a normalization rule changes."""
+    rows = read_rows(args.csv)
+    folder = hyps_dir(args.csv)
+    updated = missing = 0
+    for r in rows:
+        if r.get("error"):
+            continue
+        path = folder / f"{r['runner']}_{r['model']}_{r['precision']}.jsonl"
+        if not path.exists():
+            r["cer"] = ""  # old rule: blank it rather than mix rules in one table
+            missing += 1
+            continue
+        items = read_hyps(path)
+        old = r["cer"]
+        r["cer"] = round(cer([i["ref"] for i in items], [i["hyp"] for i in items]), 4)
+        r["hyps_with_digits"] = sum(has_digits(i["hyp"]) for i in items)
+        print(f"{r['runner']}/{r['model']}/{r['precision']}: CER {old} → {r['cer']}")
+        updated += 1
+    with open(args.csv, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=FIELDS)
+        w.writeheader()
+        w.writerows({k: r.get(k, "") for k in FIELDS} for r in rows)
+    print(f"updated {updated}, no transcripts (CER cleared) {missing}")
 
 
 def cmd_compare(args):
@@ -143,6 +171,10 @@ def build_parser():
     s.add_argument("--max-rtf", type=float, help="목표 속도, 예: 0.5 (음성 길이의 절반 시간)")
     s.add_argument("--quick-csv", help="이미 측정한 결과로 추천만 실행")
     s.set_defaults(func=cmd_recommend)
+
+    s = sub.add_parser("rescore", help="저장된 전사문으로 CER 다시 계산 (정규화 규칙이 바뀐 뒤)")
+    s.add_argument("csv")
+    s.set_defaults(func=cmd_rescore)
 
     s = sub.add_parser("compare", help="같은 PC의 두 결과 비교 (예: Docker vs 직접 실행)")
     s.add_argument("a")
