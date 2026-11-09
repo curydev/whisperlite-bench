@@ -4,4 +4,4 @@
 
 | 담당 | 기기 | OS | CPU (물리/논리 코어) | RAM | Docker 메모리 할당 | 비고 |
 |---|---|---|---|---|---|---|
-| | | | | | | |
+| curydev | 자작 데스크톱 (ASRock A520M-ITX/ac) | Windows 11 Education 26200, Docker Desktop 4.98 (WSL2) | AMD Ryzen 7 5700X3D (8/16) | 16GB | 7.7GB (WSL2 기본값: RAM의 50%) | 노트북 아님. `WHISPERLITE_HOST=amd-5700x3d-desktop`, 스레드 8 |
