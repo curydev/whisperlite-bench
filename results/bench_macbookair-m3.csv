@@ -14,3 +14,8 @@ whispercpp,base,f16,8,457,4287.25,0.0,265.349,0.0619,0.1449,386.5,140,False,jang
 whispercpp,base,q8_0,8,457,4287.25,0.0,243.912,0.0569,0.147,321.4,139,False,janghangyeol-ui-MacBookAir,
 whispercpp,small,f16,8,457,4287.25,0.0,738.73,0.1723,0.0976,853.5,142,False,janghangyeol-ui-MacBookAir,
 whispercpp,small,q8_0,8,457,4287.25,0.0,679.873,0.1586,0.0968,639.8,140,False,janghangyeol-ui-MacBookAir,
+openai,medium,fp32,8,457,4287.25,206.315,5888.97,1.3736,0.0733,4418.0,141,False,janghangyeol-ui-MacBookAir,
+faster,medium,fp32,8,457,4287.25,136.917,2784.437,0.6495,0.0733,3639.7,141,False,janghangyeol-ui-MacBookAir,
+faster,medium,int8,8,457,4287.25,1.793,2693.578,0.6283,0.0738,2035.3,142,False,janghangyeol-ui-MacBookAir,
+whispercpp,medium,f16,8,457,4287.25,132.422,1734.896,0.4047,0.0749,2191.2,140,False,janghangyeol-ui-MacBookAir,
+whispercpp,medium,q8_0,8,457,4287.25,71.901,1643.398,0.3833,0.076,1499.0,140,False,janghangyeol-ui-MacBookAir,
