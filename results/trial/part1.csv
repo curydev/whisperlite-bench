@@ -1,0 +1,8 @@
+runner,model,precision,threads,n_files,audio_seconds,load_seconds,transcribe_seconds,rtf,cer,peak_ram_mb,hyps_with_digits,docker,hostname,error
+openai,tiny,fp32,4,457,4287.25,2.93,1313.974,0.3065,0.2238,606.9,133,True,DESKTOP-0111OH2,
+openai,base,fp32,4,457,4287.25,27.335,2722.868,0.6351,0.1537,763.0,143,True,DESKTOP-0111OH2,
+openai,small,fp32,4,457,4287.25,114.705,7677.566,1.7908,0.0964,1703.9,145,True,DESKTOP-0111OH2,
+faster,tiny,fp32,4,457,4287.25,1.931,524.458,0.1223,0.2236,465.6,133,True,DESKTOP-0111OH2,
+faster,tiny,int8,4,457,4287.25,1.634,671.665,0.1567,0.6057,285.8,109,True,DESKTOP-0111OH2,
+faster,base,fp32,4,457,4287.25,21.995,911.864,0.2127,0.1538,868.5,143,True,DESKTOP-0111OH2,
+faster,base,int8,4,457,4287.25,2.683,602.255,0.1405,0.1711,380.1,145,True,DESKTOP-0111OH2,
