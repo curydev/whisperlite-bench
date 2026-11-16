@@ -1,6 +1,0 @@
-runner,model,precision,threads,n_files,audio_seconds,load_seconds,transcribe_seconds,rtf,cer,peak_ram_mb,hyps_with_digits,docker,hostname,error
-faster,tiny,fp32,4,20,175.56,23.862,29.003,0.1652,0.4591,514.8,5,True,DESKTOP-0111OH2,
-faster,tiny,int8,4,20,175.56,2.703,32.38,0.1844,0.8742,283.1,4,True,DESKTOP-0111OH2,
-openai,tiny,fp32,4,20,175.56,52.906,59.798,0.3406,0.4591,593.9,5,True,DESKTOP-0111OH2,
-whispercpp,tiny,f16,4,20,175.56,38.781,22.803,0.1299,0.1894,192.8,6,True,DESKTOP-0111OH2,
-whispercpp,tiny,q8_0,4,20,175.56,15.331,22.33,0.1272,0.1933,158.2,6,True,DESKTOP-0111OH2,

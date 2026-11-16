@@ -16,3 +16,4 @@ venv/
 results/scratch/
 
 .DS_Store
+results/trial/
