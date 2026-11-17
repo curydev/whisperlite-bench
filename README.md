@@ -19,14 +19,100 @@
 
 측정 규칙(디코딩 옵션 고정, CPU 전용, 로딩 시간 분리, CER 정규화)은 [docs/measurement-rules.md](docs/measurement-rules.md)에 있습니다.
 
+## 결과
+
+Zeroth-Korean 테스트셋 457문장(71.5분)을 기기 4대, 6개 환경에서 측정했습니다. 원본 CSV는 [results/](results/)에 있습니다. 5600X 결과만 아직 병합 전인 PR [#2](https://github.com/curydev/whisperlite-bench/pull/2)에 있습니다. 기기 정보는 [docs/devices.md](docs/devices.md)에 있습니다.
+
+| 기기 | CPU | RAM | 환경 | 스레드 | 측정한 조합 |
+|---|---|---|---|---|---|
+| MacBook Air 13 (2024) | Apple M3 (ARM, 8코어) | 8GB | 직접 실행, Docker(Colima 6GB) | 8 | 20 + 20 |
+| 자작 데스크톱 | AMD Ryzen 7 5700X3D (x86, 8코어) | 16GB | 직접 실행(Windows), Docker(WSL2 7.7GB) | 8 | 20 + 20 |
+| 노트북 (DESKTOP-0111OH2) | Intel Core i5-10210U (x86, 4코어 8스레드) | 8GB | Docker | 4 | 15 (메모리 부족으로 medium 제외) |
+| 데스크톱 (desktop-8afclth) | AMD Ryzen 5 5600X (x86, 6코어 12스레드) | 미기재 | 직접 실행(WSL2) | 6 | 12 (faster-whisper 8개는 설치 오류로 제외) |
+
+![원본 대비 속도 배율](results/figures/speedup.png)
+
+### 검증 지표
+
+**① 원본 대비 속도 향상.** 가장 빠른 경량 조합은 같은 환경의 openai/whisper보다 이만큼 빠릅니다.
+
+| 환경 | tiny | base | small | medium |
+|---|---|---|---|---|
+| 맥 직접 실행 | 1.9배 (cpp Q8_0) | 2.5배 (cpp Q8_0) | 2.5배 (cpp Q8_0) | 3.6배 (cpp Q8_0) |
+| 맥 Docker | 3.1배 (cpp Q8_0) | 3.6배 (cpp Q8_0) | 2.4배 (cpp Q8_0) | 2.1배 (cpp Q8_0) |
+| 5700X3D 직접 실행 | 3.0배 (cpp Q8_0) | 4.0배 (faster INT8) | 2.9배 (faster INT8) | 4.0배 (faster INT8) |
+| 5700X3D Docker | 2.7배 (cpp Q8_0) | 3.8배 (faster INT8) | 3.7배 (faster INT8) | 4.3배 (faster INT8) |
+| i5-10210U Docker | 2.6배 (cpp Q8_0) | 4.5배 (faster INT8) | 4.5배 (faster INT8) | — |
+| 5600X 직접 실행 | 2.6배 (cpp Q8_0) | 2.5배 (cpp Q8_0) | 2.5배 (cpp Q8_0) | 2.8배 (cpp Q8_0) |
+
+5600X는 faster-whisper를 재지 못해 whisper.cpp끼리만 비교한 값입니다.
+
+**② 원본 대비 CER 증가폭.** small과 medium에서는 모든 경량 조합이 원본보다 최대 0.4%p 높습니다. tiny와 base의 whisper.cpp는 원본보다 0.3~1.4%p 낮습니다. 예외는 두 가지입니다.
+- faster-whisper base INT8은 1.5~2.2%p 높습니다. 맥 직접 실행만 0.1%p입니다.
+- faster-whisper tiny INT8은 x86 세 환경에서 CER이 0.61~0.67로 원본(0.22)보다 크게 나쁩니다. 숫자가 나오는 문장에서 `,000`이 끝없이 반복되는 현상 때문입니다. 맥에서는 0.21~0.22로 정상입니다.
+
+**③ 최대 메모리.** 양자화한 조합은 메모리를 크게 줄입니다. 5700X3D Docker의 medium을 예로 들면 다음과 같습니다(openai/whisper 4,664MB 기준).
+
+| faster FP32 | faster INT8 | whisper.cpp F16 | whisper.cpp Q8_0 |
+|---|---|---|---|
+| 4,343MB (93%) | 1,542MB (33%) | 2,091MB (45%) | 1,408MB (30%) |
+
+가장 많이 줄인 경우는 맥 Docker tiny의 whisper.cpp Q8_0로, 원본의 23%입니다. Linux와 Docker는 PSS로, macOS와 Windows 직접 실행은 RSS로 재므로 환경끼리 직접 비교하지는 마세요.
+
+**④ 기기 간 경향.**
+- **CPU 계열에 따라 가장 빠른 구현이 다릅니다.** 맥(ARM)에서는 모든 모델에서 whisper.cpp Q8_0이 가장 빠릅니다. x86 세 환경에서는 tiny만 whisper.cpp Q8_0이고, base부터는 faster-whisper INT8이 가장 빠릅니다.
+- **맥 Docker의 faster-whisper INT8:** base와 small에서는 원본보다도 느립니다(0.9배).
+- **같은 CPU 계열 안에서는 순서가 거의 같습니다.** 20개 조합의 RTF 순위 상관(Spearman)은 x86 환경끼리 0.97~0.99입니다. 맥과 x86 사이는 0.78~0.96입니다. 5600X는 openai와 whisper.cpp 12개 조합만 있어 순서 비교에서 뺐습니다.
+- **같은 계열 CPU끼리는 속도만 다릅니다.** 5600X(6스레드)는 5700X3D 직접 실행(8스레드)보다 1.04~1.71배 느렸습니다. CER은 12개 조합 모두 0.3%p 안에서 같았습니다.
+- **CER은 환경과 거의 무관합니다.** 같은 조합의 CER 차이는 0.5%p 이하입니다. 예외는 위의 faster-whisper INT8 두 조합입니다.
+
+![RTF와 CER](results/figures/rtf_vs_cer.png)
+
+**⑤ 추천 적중.** 맥 Docker에서 50문장 짧은 측정으로 추천한 조합을, 457문장 전체 측정의 최적 조합과 비교했습니다. 허용 CER, 목표 RTF, 메모리 한도를 조합한 144가지 조건을 썼습니다([scripts/verify_recommend.py](scripts/verify_recommend.py)).
+
+| RTF 안전 여유 | 일치 | 조건 위반 | 평균 손해 | 최대 손해 |
+|---|---|---|---|---|
+| 없음 | 70.9% | 14가지 | 1.08배 | 1.41배 |
+| 5% | 76.5% | 6가지 | 1.08배 | 1.41배 |
+
+손해 배율은 추천한 조합의 실제 RTF를 최적 조합의 RTF로 나눈 값입니다.
+- **짧은 측정의 정확도:** 짧은 측정은 빠르기 순서를 잘 맞힙니다(순위 상관 0.98). 다만 RTF를 평균 9% 빠르게 잡습니다.
+- **틀린 추천의 원인:** 대부분 faster-whisper small FP32 하나 때문입니다. 짧은 측정에서는 0.37~0.43인데, 전체 측정은 두 번 모두 0.55~0.57이었습니다.
+- **다른 기기:** 아직 맥에서만 검증했습니다. 다른 기기는 50문장 짧은 측정이 들어오면 검증합니다.
+
+**⑥ Docker와 직접 실행의 차이.** 같은 PC에서 Docker가 직접 실행보다 얼마나 느린지는 플랫폼에 따라 크게 다릅니다.
+- **맥:** Docker가 1.9~4.9배 느립니다(중앙값 2.8배). Colima VM 안에서 돌고, whisper.cpp는 macOS의 Accelerate 가속을 쓰지 못합니다.
+- **5700X3D:** Docker와 직접 실행의 RTF 비율이 0.75~1.13배(중앙값 1.0배)로 비슷합니다.
+- **CER:** 두 기기 모두 환경을 바꿔도 거의 같습니다.
+
+![Docker와 직접 실행 비교](results/figures/docker_vs_native.png)
+
+### 결론
+
+- **ARM(맥):** whisper.cpp Q8_0을 쓰세요. 모든 크기에서 가장 빠르고 메모리도 가장 적게 씁니다.
+- **x86:** tiny는 whisper.cpp Q8_0, base부터는 faster-whisper INT8을 쓰세요. faster-whisper tiny INT8은 반복 오류 때문에 쓰지 마세요.
+- **정확도가 필요하면:** 한국어에서는 small(CER 약 9.7%)부터 쓸 만합니다. medium은 CER이 7.3~7.7%로 가장 낮고, 가장 빠른 조합의 RTF는 직접 실행 기준 0.38(맥)~0.51(5700X3D)입니다.
+- **속도 측정 환경:** 맥에서는 Docker 측정값으로 실제 속도를 판단하지 마세요. 직접 실행에서 다시 재야 합니다.
+
+### 한계
+
+- **스레드 수:** i5-10210U는 4스레드, 5600X는 6스레드로 쟀고, 나머지는 8스레드입니다.
+- **whisper.cpp 버전:** 기기마다 다릅니다. 맥은 `482279b8`, 5700X3D는 `f92e1e4d`입니다.
+- **5600X의 faster-whisper:** PR [#2](https://github.com/curydev/whisperlite-bench/pull/2)에서 faster-whisper 8개 조합이 설치 오류(PyAV `metadata_errors`)로 실패했습니다. 여기서는 성공한 12개만 썼고, 다시 재면 갱신합니다.
+- **CER 정규화:** 숫자 표기는 정규화하지 않습니다. 전사문을 저장해 두었으므로 규칙이 바뀌면 `whisperlite rescore`로 다시 계산할 수 있습니다.
+
+그림은 [Flint Chart](https://microsoft.github.io/flint-chart/)로 만들었습니다.
+
 ## 현재 상태
 
 - [x] 측정 파이프라인, CER·RTF 계산, 메모리 측정, 추천 로직, CLI
 - [x] 단위 테스트 (Whisper 없이 가짜 실행기로 파이프라인 검증), GitHub Actions
-- [ ] 세 실행기를 실제 모델로 실행해 확인 (실행기 담당)
-- [ ] Docker 이미지 빌드 확인, whisper.cpp 버전 고정
-- [ ] 데이터 준비 스크립트를 실제 데이터셋으로 확인
-- [ ] 숫자 표기 정규화 규칙 결정
+- [x] 세 실행기를 실제 모델로 실행해 확인 (맥, Windows, WSL2, Docker)
+- [x] 테스트셋 전체(457문장)로 기기 4대 측정, 같은 PC에서 Docker와 직접 실행 비교 (맥, 5700X3D)
+- [x] 추천 검증 (맥 Docker)
+- [ ] whisper.cpp 버전을 Dockerfile에 고정 (지금은 `master`)
+- [ ] 다른 기기의 추천 검증 (50문장 짧은 측정 필요)
+- [ ] `docs/repo-analysis.md` 작성 (실행기 담당)
 
 ## 설치
 

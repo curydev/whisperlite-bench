@@ -9,6 +9,7 @@
 | `quick_<PC>.csv` | `whisperlite recommend` | 사용자 PC의 짧은 측정. 맥 두 파일은 `bench --manifest data/pilot/manifest.csv`(50개, `--limit 50 --stride 9`)와 3개 점검 측정으로 만든 것. 맥 Docker 파일은 메모리 측정 수정 전후가 섞여 메모리 값은 참고만 |
 | `recommend_check_<PC>.csv` | `scripts/verify_recommend.py` | 추천 검증(지표 ⑤): 조건마다 짧은 측정 기반 추천과 전체 측정의 최적 조합 비교 |
 | `rtf_cer.png` | `whisperlite plot` | RTF–CER 산점도 |
+| `figures/` | [Flint Chart](https://microsoft.github.io/flint-chart/) | 루트 README의 결과 그림(속도 배율, RTF–CER, Docker와 직접 실행 비교) |
 
 ## CSV 열
 
