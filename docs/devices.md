@@ -6,3 +6,5 @@
 |---|---|---|---|---|---|---|
 | curydev | 자작 데스크톱 (ASRock A520M-ITX/ac) | Windows 11 Education 26200, Docker Desktop 4.98 (WSL2) | AMD Ryzen 7 5700X3D (8/16) | 16GB | 7.7GB (WSL2 기본값: RAM의 50%) | 노트북 아님. `WHISPERLITE_HOST=amd-5700x3d-desktop`, 스레드 8. 직접 실행: Python 3.10.20 venv(Docker와 같은 패키지 버전), whisper.cpp f92e1e4d(Docker와 같은 커밋)를 MSVC 2022 /arch:AVX2 + OpenMP로 빌드, ffmpeg 9.0.2(Docker는 4.4), 측정 중 Docker Desktop·WSL 끔. |
 | curydev | MacBook Air 13 (M3, 2024, Mac15,12) | macOS 27.0.1 (medium은 27.2), Colima 0.10.3 + Docker 29.9.2 | Apple M3 (8/8, 성능 4 + 효율 4) | 8GB | 6GB (Colima VM, 8 CPU) | 노트북, 팬 없음. `WHISPERLITE_HOST=macbookair-m3`, 스레드 8. 직접 실행: Python 3.10.22 venv(Docker와 같은 패키지 버전), whisper.cpp 482279b8를 macOS 기본 설정(Accelerate)으로 빌드, 측정 중 Colima 끔. |
+| parkchanhee200438 | 노트북 | 미기재 | Intel Core i5-10210U (4/8) | 8GB | 미기재 | 결과의 호스트 이름 `DESKTOP-0111OH2`, 스레드 4. Docker만 측정. 메모리 부족으로 medium 제외(tiny~small 15개). |
+| zoon318 | 데스크톱 | WSL2 (Windows 버전 미기재) | AMD Ryzen 5 5600X (6/12) | 미기재 | 해당 없음 | 결과의 호스트 이름 `desktop-8afclth`, 스레드 6. WSL2 안에서 직접 실행. faster-whisper 8개는 PyAV `metadata_errors` 오류로 실패해 재측정 예정(PR #2). |
