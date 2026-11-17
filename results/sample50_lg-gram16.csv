@@ -1,0 +1,7 @@
+runner,model,precision,threads,n_files,audio_seconds,load_seconds,transcribe_seconds,rtf,cer,peak_ram_mb,hyps_with_digits,docker,hostname,error
+faster,tiny,fp32,4,50,480.62,38.528,29.45,0.0613,0.1939,534.0,10,False,lg-gram16,
+faster,tiny,int8,4,50,480.62,0.828,21.206,0.0441,0.1902,281.5,9,False,lg-gram16,
+faster,base,fp32,4,50,480.62,66.604,56.165,0.1169,0.1382,865.6,15,False,lg-gram16,
+faster,base,int8,4,50,480.62,0.941,40.0,0.0832,0.1437,355.6,15,False,lg-gram16,
+faster,small,fp32,4,50,480.62,222.882,214.352,0.446,0.0778,2577.8,13,False,lg-gram16,
+faster,small,int8,4,50,480.62,1.766,123.381,0.2567,0.0742,823.3,13,False,lg-gram16,
