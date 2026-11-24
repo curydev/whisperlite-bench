@@ -49,7 +49,8 @@ Zeroth-Korean 테스트셋 457문장(71.5분)을 기기 4대, 6개 환경에서 
 
 **② 원본 대비 CER 증가폭.** small과 medium에서는 모든 경량 조합이 원본보다 최대 0.4%p 높습니다. tiny와 base의 whisper.cpp는 원본보다 0.3~1.4%p 낮습니다. 예외는 두 가지입니다.
 - faster-whisper base INT8은 1.5~2.2%p 높습니다. 맥 직접 실행만 0.1%p입니다.
-- faster-whisper tiny INT8은 x86 세 환경에서 CER이 0.61~0.67로 원본(0.22)보다 크게 나쁩니다. 숫자가 나오는 문장에서 `,000`이 끝없이 반복되는 현상 때문입니다. 맥에서는 0.21~0.22로 정상입니다.
+- faster-whisper tiny INT8은 x86 세 환경(5700X3D 직접 실행·Docker, i5-10210U Docker)에서 CER이 0.61~0.67로 원본(0.22)보다 크게 나쁩니다. 457문장 중 139~142문장의 전사가 정답보다 3배 넘게 길어지기 때문입니다. 그중 123~125문장은 쉼표가 끝없이 이어지는 형태이고, `,000` 반복은 7~10문장뿐입니다. 맥에서는 0.21~0.22로 정상입니다.
+- 같은 CPU(i5-10210U)를 쓰는 다른 노트북에서 Docker 없이 직접 실행한 50문장 측정(병합 전인 PR [#4](https://github.com/curydev/whisperlite-bench/pull/4))은 0.19로 정상이었습니다. 같은 50문장이 i5-10210U Docker에서는 0.45였습니다. 따라서 x86 CPU만으로는 설명되지 않습니다.
 
 **③ 최대 메모리.** 양자화한 조합은 메모리를 크게 줄입니다. 5700X3D Docker의 medium을 예로 들면 다음과 같습니다(openai/whisper 4,664MB 기준).
 
@@ -90,7 +91,7 @@ Zeroth-Korean 테스트셋 457문장(71.5분)을 기기 4대, 6개 환경에서 
 ### 결론
 
 - **ARM(맥):** whisper.cpp Q8_0을 쓰세요. 모든 크기에서 가장 빠르고 메모리도 가장 적게 씁니다.
-- **x86:** tiny는 whisper.cpp Q8_0, base부터는 faster-whisper INT8을 쓰세요. faster-whisper tiny INT8은 반복 오류 때문에 쓰지 마세요.
+- **x86:** tiny는 whisper.cpp Q8_0, base부터는 faster-whisper INT8을 쓰세요. faster-whisper tiny INT8은 x86 세 환경에서 반복 오류가 났으므로 피하세요. 정상으로 나온 x86 환경도 있어 원인은 아직 모릅니다.
 - **정확도가 필요하면:** 한국어에서는 small(CER 약 9.7%)부터 쓸 만합니다. medium은 CER이 7.3~7.7%로 가장 낮고, 가장 빠른 조합의 RTF는 직접 실행 기준 0.38(맥)~0.51(5700X3D)입니다.
 - **속도 측정 환경:** 맥에서는 Docker 측정값으로 실제 속도를 판단하지 마세요. 직접 실행에서 다시 재야 합니다.
 
@@ -99,6 +100,7 @@ Zeroth-Korean 테스트셋 457문장(71.5분)을 기기 4대, 6개 환경에서 
 - **스레드 수:** i5-10210U는 4스레드, 5600X는 6스레드로 쟀고, 나머지는 8스레드입니다.
 - **whisper.cpp 버전:** 기기마다 다릅니다. 맥은 `482279b8`, 5700X3D는 `f92e1e4d`입니다.
 - **5600X의 faster-whisper:** PR [#2](https://github.com/curydev/whisperlite-bench/pull/2)에서 faster-whisper 8개 조합이 설치 오류(PyAV `metadata_errors`)로 실패했습니다. 여기서는 성공한 12개만 썼고, 다시 재면 갱신합니다.
+- **faster-whisper tiny INT8 반복 오류의 원인:** 아직 찾지 못했습니다. i5-10210U를 쓰는 노트북 두 대 중 Docker로 잰 쪽은 무너지고 직접 실행으로 잰 쪽은 정상이었습니다. 5700X3D는 Windows 직접 실행에서도 무너졌습니다. 그래서 CPU 제조사나 Docker 여부만으로는 설명되지 않습니다. Docker 이미지는 패키지 버전을 고정하지 않으므로 환경마다 CTranslate2 버전이 다를 수 있습니다. 이를 확인하려면 각 환경의 패키지 버전 기록이 필요합니다.
 - **CER 정규화:** 숫자 표기는 정규화하지 않습니다. 전사문을 저장해 두었으므로 규칙이 바뀌면 `whisperlite rescore`로 다시 계산할 수 있습니다.
 
 그림은 [Flint Chart](https://microsoft.github.io/flint-chart/)로 만들었습니다.
