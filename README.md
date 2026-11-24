@@ -50,7 +50,7 @@ Zeroth-Korean 테스트셋 457문장(71.5분)을 기기 4대, 6개 환경에서 
 **② 원본 대비 CER 증가폭.** small과 medium에서는 모든 경량 조합이 원본보다 최대 0.4%p 높습니다. tiny와 base의 whisper.cpp는 원본보다 0.3~1.4%p 낮습니다. 예외는 두 가지입니다.
 - faster-whisper base INT8은 1.5~2.2%p 높습니다. 맥 직접 실행만 0.1%p입니다.
 - faster-whisper tiny INT8은 x86 세 환경(5700X3D 직접 실행·Docker, i5-10210U Docker)에서 CER이 0.61~0.67로 원본(0.22)보다 크게 나쁩니다. 457문장 중 139~142문장의 전사가 정답보다 3배 넘게 길어지기 때문입니다. 그중 123~125문장은 쉼표가 끝없이 이어지는 형태이고, `,000` 반복은 7~10문장뿐입니다. 맥에서는 0.21~0.22로 정상입니다.
-- 같은 CPU(i5-10210U)를 쓰는 다른 노트북에서 Docker 없이 직접 실행한 50문장 측정(병합 전인 PR [#4](https://github.com/curydev/whisperlite-bench/pull/4))은 0.19로 정상이었습니다. 같은 50문장이 i5-10210U Docker에서는 0.45였습니다. 따라서 x86 CPU만으로는 설명되지 않습니다.
+- 같은 CPU(i5-10210U)를 쓰는 다른 노트북에서 Docker 없이 직접 실행한 50문장 측정([results/sample50_lg-gram16.csv](results/sample50_lg-gram16.csv), PR [#4](https://github.com/curydev/whisperlite-bench/pull/4))은 0.19로 정상이었습니다. 같은 50문장이 i5-10210U Docker에서는 0.45였습니다. 따라서 x86 CPU만으로는 설명되지 않습니다.
 
 **③ 최대 메모리.** 양자화한 조합은 메모리를 크게 줄입니다. 5700X3D Docker의 medium을 예로 들면 다음과 같습니다(openai/whisper 4,664MB 기준).
 
