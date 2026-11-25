@@ -1,21 +1,21 @@
 runner,model,precision,threads,n_files,audio_seconds,load_seconds,transcribe_seconds,rtf,cer,peak_ram_mb,hyps_with_digits,docker,hostname,error
-faster,tiny,fp32,6,457,4287.25,,,,,256.0,,False,desktop-8afclth,TypeError: open() got an unexpected keyword argument 'metadata_errors'
-faster,tiny,int8,6,457,4287.25,,,,,166.8,,False,desktop-8afclth,TypeError: open() got an unexpected keyword argument 'metadata_errors'
 openai,tiny,fp32,6,457,4287.25,2.626,600.783,0.1401,0.2238,611.7,133,False,desktop-8afclth,
 whispercpp,tiny,f16,6,457,4287.25,2.138,306.083,0.0714,0.2097,193.5,134,False,desktop-8afclth,
 whispercpp,tiny,q8_0,6,457,4287.25,1.705,227.676,0.0531,0.2105,159.2,134,False,desktop-8afclth,
 openai,base,fp32,6,457,4287.25,3.367,980.554,0.2287,0.1537,774.6,143,False,desktop-8afclth,
-faster,base,fp32,6,457,4287.25,,,,,422.8,,False,desktop-8afclth,TypeError: open() got an unexpected keyword argument 'metadata_errors'
-faster,base,int8,6,457,4287.25,,,,,326.8,,False,desktop-8afclth,TypeError: open() got an unexpected keyword argument 'metadata_errors'
 whispercpp,base,f16,6,457,4287.25,3.299,427.971,0.0998,0.1468,300.7,139,False,desktop-8afclth,
 whispercpp,base,q8_0,6,457,4287.25,2.248,391.653,0.0914,0.1479,235.0,141,False,desktop-8afclth,
 openai,small,fp32,6,457,4287.25,8.712,3020.066,0.7044,0.0964,1672.4,145,False,desktop-8afclth,
-faster,small,fp32,6,457,4287.25,,,,,1219.8,,False,desktop-8afclth,TypeError: open() got an unexpected keyword argument 'metadata_errors'
-faster,small,int8,6,457,4287.25,,,,,611.0,,False,desktop-8afclth,TypeError: open() got an unexpected keyword argument 'metadata_errors'
 whispercpp,small,f16,6,457,4287.25,8.463,1298.454,0.3029,0.0972,767.3,142,False,desktop-8afclth,
 whispercpp,small,q8_0,6,457,4287.25,5.106,1195.466,0.2788,0.0968,550.3,140,False,desktop-8afclth,
 openai,medium,fp32,6,457,4287.25,26.064,10118.781,2.3602,0.0733,4663.1,141,False,desktop-8afclth,
-faster,medium,fp32,6,457,4287.25,,,,,3756.3,,False,desktop-8afclth,TypeError: open() got an unexpected keyword argument 'metadata_errors'
-faster,medium,int8,6,457,4287.25,,,,,1546.9,,False,desktop-8afclth,TypeError: open() got an unexpected keyword argument 'metadata_errors'
 whispercpp,medium,f16,6,457,4287.25,25.484,3962.993,0.9244,0.075,2087.8,140,False,desktop-8afclth,
 whispercpp,medium,q8_0,6,457,4287.25,13.756,3557.359,0.8298,0.0773,1405.0,140,False,desktop-8afclth,
+faster,tiny,fp32,6,457,4287.25,1.174,250.713,0.0585,0.2236,371.0,133,False,desktop-8afclth,
+faster,tiny,int8,6,457,4287.25,0.724,297.641,0.0694,0.5965,259.0,106,False,desktop-8afclth,
+faster,base,fp32,6,457,4287.25,0.95,481.675,0.1124,0.1538,542.8,143,False,desktop-8afclth,
+faster,base,int8,6,457,4287.25,0.845,326.732,0.0762,0.1564,328.7,144,False,desktop-8afclth,
+faster,small,fp32,6,457,4287.25,2.205,1359.234,0.317,0.0964,1325.5,145,False,desktop-8afclth,
+faster,small,int8,6,457,4287.25,1.592,830.639,0.1937,0.0961,612.9,146,False,desktop-8afclth,
+faster,medium,fp32,6,457,4287.25,6.34,4296.566,1.0022,0.0733,3612.1,141,False,desktop-8afclth,
+faster,medium,int8,6,457,4287.25,10.718,2420.479,0.5646,0.0737,1546.8,142,False,desktop-8afclth,
