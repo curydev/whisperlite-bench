@@ -1,0 +1,5 @@
+runner,model,precision,threads,n_files,audio_seconds,load_seconds,transcribe_seconds,rtf,cer,peak_ram_mb,hyps_with_digits,docker,hostname,error
+faster,tiny,fp32,10,50,480.62,25.834,15.659,0.0326,0.1939,434.8,10,False,macbookair-m5,
+faster,tiny,int8,10,50,480.62,0.491,23.823,0.0496,0.1958,387.6,10,False,macbookair-m5,
+faster,base,fp32,10,50,480.62,0.539,27.297,0.0568,0.1382,673.4,15,False,macbookair-m5,
+faster,base,int8,10,50,480.62,0.534,40.782,0.0849,0.1391,530.5,13,False,macbookair-m5,
